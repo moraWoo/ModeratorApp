@@ -61,5 +61,3 @@ The application is developed following modern iOS development approaches, focusi
 - iOS 16.0+
 - Xcode 15.0+
 - Swift 5.9+
-
-## Project Structure
