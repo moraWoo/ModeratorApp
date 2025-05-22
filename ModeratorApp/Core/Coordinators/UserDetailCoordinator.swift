@@ -10,14 +10,13 @@ import Swinject
 
 class UserDetailCoordinator: Coordinator {
     @Published var currentView: AnyView
-    
-    private weak var parentCoordinator: UserListCoordinator?
+    private var appCoordinator: AppCoordinator?
     private let container: Resolver
     private let user: User
     
-    init(user: User, parentCoordinator: UserListCoordinator) {
+    init(user: User, parentCoordinator: AppCoordinator) {
+        self.appCoordinator = parentCoordinator
         self.user = user
-        self.parentCoordinator = parentCoordinator
         self.container = DIContainer.shared.container
         self.currentView = AnyView(EmptyView())
         showUserDetail()
@@ -26,12 +25,13 @@ class UserDetailCoordinator: Coordinator {
     private func showUserDetail() {
         let viewModel = container.resolve(UserDetailViewModel.self, argument: user)!
         viewModel.coordinator = self
+        print("Coordinator set: \(viewModel.coordinator != nil)")
         
         let userDetailView = UserDetailView(viewModel: viewModel)
         currentView = AnyView(userDetailView)
     }
     
     func dismiss() {
-        parentCoordinator?.returnToUserList()
+        appCoordinator?.returnToUserList()
     }
 }

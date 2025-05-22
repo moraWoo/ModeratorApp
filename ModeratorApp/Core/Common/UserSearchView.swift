@@ -10,6 +10,7 @@ import SwiftUI
 struct UserSearchView: View {
     @Binding var searchText: String
     let placeholder: String
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         HStack {
@@ -18,6 +19,7 @@ struct UserSearchView: View {
             
             TextField(placeholder, text: $searchText)
                 .foregroundColor(.primary)
+                .focused($isFocused)
             
             if !searchText.isEmpty {
                 Button(action: {
@@ -26,11 +28,16 @@ struct UserSearchView: View {
                     Image(Asset.closeButton.name)
                         .foregroundColor(Color.grayTetriary)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(12)
         .frame(height: 40)
-        .background(Color.grayTetriary)
-        .cornerRadius(100)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 100)
+                .stroke(isFocused ? Color.bluePrimary : Color.grayTetriary, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 100))
     }
 }

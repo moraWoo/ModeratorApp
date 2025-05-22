@@ -31,12 +31,7 @@ class UserListCoordinator: Coordinator {
     }
     
     func showUserDetail(user: User) {
-        userDetailCoordinator = UserDetailCoordinator(user: user, parentCoordinator: self)
-        currentView = AnyView(
-            NavigationView {
-                userDetailCoordinator!.currentView
-            }
-        )
+        appCoordinator?.showUserDetail(user: user)
     }
     
     func returnToUserList() {

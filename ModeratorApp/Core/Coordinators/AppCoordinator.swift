@@ -13,6 +13,7 @@ class AppCoordinator: Coordinator {
     
     private let container: Resolver
     private var userListCoordinator: UserListCoordinator?
+    private var userDetailCoordinator: UserDetailCoordinator?
     
     init() {
         self.container = DIContainer.shared.container
@@ -26,6 +27,23 @@ class AppCoordinator: Coordinator {
     
     private func showUserList() {
         userListCoordinator = UserListCoordinator(appCoordinator: self)
-        currentView = AnyView(userListCoordinator!.currentView)
+        currentView = AnyView(
+            NavigationView {
+                userListCoordinator!.currentView
+            }
+        )
+    }
+
+    func showUserDetail(user: User) {
+        userDetailCoordinator = UserDetailCoordinator(user: user, parentCoordinator: self)
+        currentView = AnyView(
+            NavigationView {
+                userDetailCoordinator!.currentView
+            }
+        )
+    }
+
+    func returnToUserList() {
+        showUserList()
     }
 }

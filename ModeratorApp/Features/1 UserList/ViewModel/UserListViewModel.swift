@@ -31,6 +31,7 @@ class UserListViewModel: ObservableObject {
         
         $selectedTab
             .combineLatest($searchText)
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] _, _ in
                 self?.loadLocalUsers()
             }
@@ -72,6 +73,7 @@ class UserListViewModel: ObservableObject {
     }
     
     func onUserTapped(user: User) {
+        print("User tapped: \(user.name)")
         coordinator?.showUserDetail(user: user)
     }
     

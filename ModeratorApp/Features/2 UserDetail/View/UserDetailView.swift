@@ -14,171 +14,185 @@ struct UserDetailView: View {
     @State private var showDeleteAlert = false
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .center, spacing: 20) {
-                HStack {
-                    Button(action: {
-                        viewModel.goBack()
-                    }) {
-                        HStack {
-                            Image(systemName: "chevron.left")
-                            Text("Назад")
+        ZStack {
+            Color.graySecondary.ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                ZStack {
+                    HStack {
+                        Button(action: {
+                            viewModel.goBack()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "chevron.left")
+                                Text("Back")
+                            }
+                            .foregroundColor(.blue)
                         }
-                        .foregroundColor(.blue)
+                        
+                        Spacer()
                     }
-                    Spacer()
+                    
+                    Text("Detailed Info")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.black)
                 }
-                .padding(.horizontal)
-                .padding(.top)
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
                 
-                Text("Детальная информация")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                PhotosPicker(
-                    selection: $selectedPhotoItem,
-                    matching: .images,
-                    photoLibrary: .shared()
-                ) {
-                    AvatarView(imageData: viewModel.user.avatarData, size: 120)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.blue, lineWidth: 3)
-                        )
-                        .overlay(
-                            VStack {
-                                Spacer()
-                                HStack {
-                                    Spacer()
-                                    Image(systemName: "camera.fill")
-                                        .foregroundColor(.white)
-                                        .padding(8)
+                ScrollView {
+                    VStack(spacing: 32) {
+                        VStack(spacing: 16) {
+                            PhotosPicker(
+                                selection: $selectedPhotoItem,
+                                matching: .images,
+                                photoLibrary: .shared()
+                            ) {
+                                ZStack {
+                                    if let avatarData = viewModel.user.avatarData, let uiImage = UIImage(data: avatarData) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 72, height: 72)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(Color.white)
+                                            .frame(width: 72, height: 72)
+                                            .overlay(
+                                                Image(Asset.adminsUnactive.name)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 24, height: 24)
+                                            )
+                                    }
+                                    
+                                    Image(Asset.add.name)
+                                        .resizable()
+                                        .frame(width: 16, height: 16)
                                         .background(Color.blue)
                                         .clipShape(Circle())
-                                        .offset(x: -10, y: -10)
+                                        .offset(x: 36, y: 36)
                                 }
                             }
-                        )
-                        .padding()
-                }
-                .onChange(of: selectedPhotoItem) { newItem in
-                    Task {
-                        if let newItem = newItem {
-                            if let data = try? await newItem.loadTransferable(type: Data.self) {
-                                viewModel.updateAvatar(data: data)
+                            .onChange(of: selectedPhotoItem) { newItem in
+                                Task {
+                                    if let newItem = newItem {
+                                        if let data = try? await newItem.loadTransferable(type: Data.self) {
+                                            viewModel.updateAvatar(data: data)
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-                
-                if viewModel.user.avatarData != nil {
-                    Button("Удалить аватар") {
-                        showDeleteAlert = true
-                    }
-                    .foregroundColor(.red)
-                    .font(.caption)
-                }
-                
-                VStack(alignment: .leading, spacing: 16) {
-                    detailSection(title: "Основная информация") {
-                        detailRow(icon: "person.fill", title: "Имя", value: viewModel.user.name)
-                        detailRow(icon: "at", title: "Имя пользователя", value: viewModel.user.username)
-                        detailRow(icon: "envelope.fill", title: "Email", value: viewModel.user.email)
-                        detailRow(icon: "phone.fill", title: "Телефон", value: viewModel.user.phone)
-                        detailRow(icon: "globe", title: "Веб-сайт", value: viewModel.user.website)
-                    }
-                    
-                    if let address = viewModel.user.address {
-                        detailSection(title: "Адрес") {
-                            detailRow(icon: "mappin.and.ellipse", title: "Улица", value: address.street)
-                            detailRow(icon: "building.2.fill", title: "Квартира", value: address.suite)
-                            detailRow(icon: "building.columns.fill", title: "Город", value: address.city)
-                            detailRow(icon: "envelope.fill", title: "Индекс", value: address.zipcode)
-                            if let geo = address.geo {
-                                detailRow(icon: "location.fill", title: "Координаты", value: "\(geo.lat), \(geo.lng)")
-                            }
-                        }
-                    }
-                    
-                    if let company = viewModel.user.company {
-                        detailSection(title: "Компания") {
-                            detailRow(icon: "building.fill", title: "Название", value: company.name)
-                            detailRow(icon: "quote.bubble.fill", title: "Слоган", value: company.catchPhrase)
-                            detailRow(icon: "briefcase.fill", title: "Сфера", value: company.bs)
-                        }
-                    }
-                    
-                    detailSection(title: "Статус пользователя") {
-                        Toggle(isOn: .init(
-                            get: { viewModel.user.isAdmin },
-                            set: { _ in viewModel.toggleAdmin() }
-                        )) {
-                            HStack {
-                                Image(systemName: "shield.fill")
-                                    .foregroundColor(.blue)
-                                Text("Администратор")
-                                    .font(.headline)
-                            }
-                        }
-                        .tint(.blue)
+                        .padding(.top, 16)
                         
-                        Toggle(isOn: .init(
-                            get: { viewModel.user.isBanned },
-                            set: { _ in viewModel.toggleBanned() }
-                        )) {
-                            HStack {
-                                Image(systemName: "person.fill.xmark")
-                                    .foregroundColor(.red)
-                                Text("Заблокирован")
-                                    .font(.headline)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("General Info")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.black)
+                                .padding(.top, 16)
+                                .padding(.bottom, 4)
+                                .padding(.horizontal, 16)
+                            
+                            VStack(spacing: 0) {
+                                infoRow(title: "Name:", value: viewModel.user.name)
+                                dashedDivider()
+                                infoRow(title: "Username:", value: viewModel.user.username)
+                                dashedDivider()
+                                infoRow(title: "Email:", value: viewModel.user.email)
+                                dashedDivider()
+                                infoRow(title: "Phone:", value: viewModel.user.phone)
                             }
                         }
-                        .tint(.red)
+                        .frame(height: 311)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.grayTetriary, lineWidth: 0.5)
+                        )
+                        .padding(.horizontal, 16)
+                        
+                        Spacer()
                     }
                 }
-                .padding()
-            }
-        }
-        .alert("Удалить аватар", isPresented: $showDeleteAlert) {
-            Button("Удалить", role: .destructive) {
-                viewModel.deleteAvatar()
-            }
-            Button("Отмена", role: .cancel) { }
-        } message: {
-            Text("Вы уверены, что хотите удалить аватар?")
-        }
-    }
-    
-    private func detailSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.bottom, 4)
-            
-            content()
-        }
-        .padding(.vertical, 8)
-    }
-    
-    private func detailRow(icon: String, title: String, value: String) -> some View {
-        HStack(alignment: .top) {
-            Image(systemName: icon)
-                .foregroundColor(.blue)
-                .frame(width: 24, height: 24)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
                 
-                Text(value)
-                    .font(.body)
-                    .foregroundColor(.primary)
+                VStack(spacing: 0) {
+                    HStack(spacing: 16) {
+                        Button(action: {
+                            viewModel.toggleBanned()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(Asset.userBlock.name)
+                                    .frame(width: 24, height: 24)
+                                Text(viewModel.user.isBanned ? "Unblock" : "Block")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .foregroundColor(.redPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.redSecondary)
+                            .clipShape(RoundedRectangle(cornerRadius: 100))
+                        }
+                        
+                        Button(action: {
+                            viewModel.toggleAdmin()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(Asset.addUser.name)
+                                    .frame(width: 24, height: 24)
+                                Text(viewModel.user.isAdmin ? "Unadmin" : "Assign Admin")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .foregroundColor(.bluePrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.blueSecondary)
+                            .clipShape(RoundedRectangle(cornerRadius: 100))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                }
+                .frame(height: 80)
+                .background(Color.white)
+                .overlay(
+                    VStack {
+                        Rectangle()
+                            .fill(Color.grayTetriary)
+                            .frame(height: 0.5)
+                        Spacer()
+                    }
+                )
             }
-            
-            Spacer()
         }
-        .padding(.vertical, 4)
+        .navigationBarHidden(true)
+    }
+    
+    private func infoRow(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 14))
+                .foregroundColor(.graySecondaryTwo)
+            
+            Text(value)
+                .font(.system(size: 16))
+                .foregroundColor(.black)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+    
+    private func dashedDivider() -> some View {
+        Path { path in
+            path.move(to: CGPoint(x: 0, y: 0))
+            path.addLine(to: CGPoint(x: 1000, y: 0))
+        }
+        .stroke(style: StrokeStyle(lineWidth: 0.5, dash: [5]))
+        .foregroundColor(.grayTetriary)
+        .frame(height: 0.5)
+        .padding(.horizontal, 16)
     }
 }

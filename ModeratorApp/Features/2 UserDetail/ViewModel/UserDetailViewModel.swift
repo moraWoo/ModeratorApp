@@ -17,8 +17,8 @@ class UserDetailViewModel: ObservableObject {
     private let imageService: ImageServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
-    weak var coordinator: UserDetailCoordinator?
-    
+    var coordinator: UserDetailCoordinator?
+
     init(user: User, userService: UserServiceProtocol, imageService: ImageServiceProtocol) {
         self.user = user
         self.userService = userService
@@ -46,6 +46,7 @@ class UserDetailViewModel: ObservableObject {
     }
     
     func goBack() {
+        print("Go back pressed, coordinator: \(coordinator != nil)")
         coordinator?.dismiss()
     }
 }
