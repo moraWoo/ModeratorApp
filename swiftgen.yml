@@ -1,0 +1,6 @@
+xcassets:
+  inputs:
+    - ModeratorApp/Resources/Assets.xcassets
+  outputs:
+    templateName: swift5
+    output: ModeratorApp/Core/Generated/Assets + Generated.swift
